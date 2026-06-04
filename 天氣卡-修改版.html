@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天氣小卡</title>
+    <style>
+        /* Step2 CSS 排版 */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #f5f7fa;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        /* 按鈕區 */
+        .btn-group {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            width: 100px;
+            height: 45px;
+            margin: 5px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background-color: #b9d0eb;
+        }
+
+        /* 卡片容器 */
+        #showlist {
+            display: grid;
+            grid-template-columns:
+                repeat(auto-fill, minmax(250px, 1fr));
+
+            gap: 20px;
+        }
+
+        /* 天氣卡 */
+        .card {
+            background-color: white;
+            border-radius: 15px;
+            padding: 20px;
+
+            box-shadow:
+                0 2px 10px rgba(0, 0, 0, 0.1);
+
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            margin-top: 0;
+        }
+
+        .weather-icon {
+            font-size: 50px;
+            text-align: center;
+            margin: 15px 0;
+        }
+
+        .card p {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Step1 建立畫面 -->
+    <h1>全台即時天氣</h1>
+    <div class="btn-group">
+        <button id="all">全部</button>
+        <button id="north" type="button">北部</button>
+        <button id="central" type="button">中部</button>
+        <button id="south" type="button">南部</button>
+        <button id="east" type="button">東部</button>
+        <button id="other" type="button">離島</button>
+    </div>
+    <div id="showlist"></div>
+    <!-- <table>
+        <thead>
+            <tr>
+                <th>縣市</th>
+                <th>天氣</th>
+                <th>降雨率</th>
+                <th>舒適度</th>
+                <th>溫度</th>
+            </tr>
+        </thead>
+    </table> -->
+    <!-- Step3 互動 -->
+    <Script>
+        // 原本是拆開的 -> 會合併成一個來處理
+        const cities = {
+            "north": ["臺北市", "新北市", "基隆市", "桃園市", "新竹市", "新竹縣"],
+            "central": ["臺中市", "苗栗縣", "彰化縣", "南投縣", "雲林縣"],
+            "south": ["嘉義市", "嘉義縣", "臺南市", "高雄市", "屏東縣"],
+            "east": ["宜蘭縣", "花蓮縣", "臺東縣"],
+            "other": ["金門縣", "連江縣", "澎湖縣"],
+        };
+
+        //3.建立全域變數
+        let weatherData = [];
+        //1.鏈結中央氣象署氣象資料開放平台的36小時天氣預報API
+        const url = 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-E44311B3-B163-4B08-92A1-4FBABF3C4D37';
+        //2.抓資料
+        fetch(url)
+            .then((response) => {
+                return response.json();
+            })
+            .then(data => {
+                weatherData = data.records.location;
+                renderWeather(weatherData);
+
+            });
+        //3.用方法 顯示資料
+        function renderWeather(locations) {
+            const showlist = document.querySelector("#showlist");
+            //預設清除資料=切換區域才可以重新渲染資料
+            showlist.innerHTML = "";
+            //迴圈抓取數據
+            locations.forEach(city => {
+                const wx = city.weatherElement[0].time[0].parameter.parameterName;
+                const pop = city.weatherElement[1].time[0].parameter.parameterName;
+                const minT = city.weatherElement[2].time[0].parameter.parameterName;
+                const ci = city.weatherElement[3].time[0].parameter.parameterName;
+                const maxT = city.weatherElement[4].time[0].parameter.parameterName;
+
+                let icon = "☁️";
+                if (wx.includes("晴")) {
+                    icon = "☀️";
+                }
+                else if (wx.includes("雨")) {
+                    icon = "🌧️";
+                }
+                else if (wx.includes("雷")) {
+                    icon = "⛈️";
+                }
+                //+= 才會全部顯示 =只會顯示最後一筆
+                showlist.innerHTML += `
+                    <div class="card">
+                        <h2>${city.locationName}</h2>
+                        <div class="weather-icon">${icon}</div>
+                        <p><strong>天氣：</strong>${wx}</p>
+                        <p><strong>降雨率：</strong>${pop}%</p>
+                        <p><strong>舒適度：</strong>${ci}</p>
+                        <p><strong>溫度：</strong>${minT} ~ ${maxT}°C</p>
+                    </div>
+                `;
+            });
+        };
+
+        // 4.加上按鈕切換區域顯示在畫面上
+        const allbtn = document.querySelector("#all");
+        const norbtn = document.querySelector("#north");
+        const cenbtn = document.querySelector("#central");
+        const soubtn = document.querySelector("#south");
+        const eastbtn = document.querySelector("#east");
+        const otherbtn = document.querySelector("#other");
+
+        //2-2 按鈕篩選
+        allbtn.addEventListener("click", () => selectCities());
+        norbtn.addEventListener('click', () => selectCities('north'));
+        cenbtn.addEventListener('click', () => selectCities('central'));
+        soubtn.addEventListener('click', () => selectCities('south'));
+        eastbtn.addEventListener('click', () => selectCities('east'));
+        otherbtn.addEventListener('click', () => selectCities('other'));
+
+        function selectCities(section) {
+            // 物件使用點點的話只能夠找物件裡面有的內容
+            // 動態取得物件裡面的key -> 物件名稱[KEY]
+            if (section) {
+                const result = weatherData.filter(city => {
+                    return cities[section].includes(city.locationName);
+                });
+                renderWeather(result);
+            } else {
+                renderWeather(weatherData);
+            }
+        }
+    </Script>
+</body>
+
+</html>
