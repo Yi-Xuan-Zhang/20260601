@@ -114,10 +114,10 @@
         const url = 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-E44311B3-B163-4B08-92A1-4FBABF3C4D37';
         //2.抓資料
         fetch(url)
-            .then((response) => {
+            .then((response) => {//1. 將回應轉換成 JSON
                 return response.json();
             })
-            .then(data => {//使用取得的資料
+            .then(data => {//2.使用取得的資料
                 weatherData = data.records.location;
                 renderWeather(weatherData);
 
