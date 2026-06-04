@@ -87,7 +87,7 @@
     <!-- Step1 建立畫面 -->
     <h1>全台即時天氣</h1>
     <div class="btn-group">
-        <button id="all">全部</button>
+        <button id="all" type="button">全部</button>
         <button id="north" type="button">北部</button>
         <button id="central" type="button">中部</button>
         <button id="south" type="button">南部</button>
@@ -108,7 +108,7 @@
     </table> -->
     <!-- Step3 互動 -->
     <Script>
-        //3.建立全域變數
+        //5.建立全域變數
         let weatherData = [];
         //1.鏈結中央氣象署氣象資料開放平台的36小時天氣預報API
         const url = 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-C0032-001?Authorization=CWA-E44311B3-B163-4B08-92A1-4FBABF3C4D37';
@@ -117,7 +117,7 @@
             .then((response) => {
                 return response.json();
             })
-            .then(data => {
+            .then(data => {//使用取得的資料
                 weatherData = data.records.location;
                 renderWeather(weatherData);
 
